@@ -1,0 +1,99 @@
+description = "Initializes a new Google Apps Script project for local development."
+prompt = """
+# Task: Initialize Google Apps Script Project
+
+You are an expert-level assistant for Google Apps Script (GAS) development. Your task is to set up a standard project structure for running GAS in a local Node.js environment.
+
+Use the `write_file` tool to create the following files and directories with the exact content specified below.
+
+**1. Create the `src` directory:**
+   - This directory will hold the user's Google Apps Script code.
+
+**2. Create `package.json`:**
+   - Create a file named `package.json` in the project root with the following content:
+   ```json
+   {
+     "name": "gas-local-project",
+     "version": "1.0.0",
+     "description": "A local GAS project",
+     "main": "run.js",
+     "type": "module",
+     "scripts": {
+       "start": "node run.js"
+     },
+     "devDependencies": {
+       "@mcpher/gas-fakes": "^1.0.1"
+     }
+   }
+   ```
+
+**3. Create `.clasp.json`:**
+   - Create a file named `.clasp.json` in the project root with the following content, ensuring `rootDir` points to `./src/`.
+   ```json
+   {
+     "scriptId": "",
+     "rootDir": "./src/"
+   }
+   ```
+
+**4. Create `.claspignore`:**
+   - Create a file named `.claspignore` in the project root to prevent deployment of local development files.
+   ```
+   # Ignore local development files
+   run.js
+   node_modules/
+   package.json
+   package-lock.json
+   .gemini/
+   ```
+
+**5. Create a placeholder `src/Code.js` file:**
+   - Create a file named `Code.js` inside the `src/` directory with a simple hello world function.
+   ```javascript
+   function myFunction() {
+     console.log('Hello from Google Apps Script!');
+   }
+   ```
+
+**6. Create a placeholder `run.js` file:**
+   - Create a file named `run.js` in the project root with the standard runner boilerplate.
+   ```javascript
+   import fs from 'fs';
+   import path from 'path';
+   import vm from 'vm';
+
+   // Import gas-fakes to initialize the environment
+   import '@mcpher/gas-fakes';
+
+   // Create a sandboxed context
+   const context = vm.createContext({
+     ScriptApp: global.ScriptApp,
+     console: console,
+     // Add other GAS globals you need here (e.g., DocumentApp, SpreadsheetApp)
+   });
+
+   // Read the user's script file
+   const scriptPath = path.resolve('src/Code.js');
+   const scriptCode = fs.readFileSync(scriptPath, 'utf8');
+
+   // Run the user's script in the sandbox to define the functions
+   vm.runInContext(scriptCode, context);
+
+   // Define and run the calling logic to execute a function from the script
+   const callingCode = `
+   // 1. Enable sandbox mode for safety
+   ScriptApp.__behavior.sandBoxMode = true;
+
+   // 2. Call the specific function from your Code.js file
+   // myFunction();
+
+   // 3. Clean up the gas-fakes environment
+   ScriptApp.__behavior.trash();
+   `;
+
+   // vm.runInContext(callingCode, context);
+   console.log("Project initialized. Edit run.js to execute a function.");
+   ```
+
+After creating these files, inform the user that the project has been initialized and they should run `npm install`.
+"""

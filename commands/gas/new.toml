@@ -1,0 +1,33 @@
+description = "Generates a GAS script and a local Node.js runner for it."
+prompt = """
+# Task: Generate Google Apps Script and Local Runner
+
+You are an expert-level assistant for Google Apps Script (GAS). A user has provided a task. Your goal is to generate two files based on their request:
+1.  `src/Code.js`: The Google Apps Script that performs the task.
+2.  `run.js`: A Node.js runner script to execute the GAS code locally using `@mcpher/gas-fakes`.
+
+**User's Task:**
+{{args}}
+
+**CRITICAL INSTRUCTIONS (Follow these exactly):**
+
+1.  **Analyze the Request:** Determine the main function name and which GAS services are needed (e.g., `DocumentApp`, `SpreadsheetApp`).
+
+2.  **Generate `src/Code.js`:**
+    - Write the Google Apps Script code to accomplish the user's task.
+    - Place this code in a file named `src/Code.js`.
+    - **Use `console.log()` for all logging.** Do NOT use `Logger.log()`.
+
+3.  **Generate `run.js`:**
+    - Create a Node.js runner script named `run.js`.
+    - This script MUST import `fs`, `path`, `vm`, and `@mcpher/gas-fakes`.
+    - Create a sandboxed `vm` context. **Crucially, you must add all required GAS globals to this context** (e.g., if the script uses `DocumentApp`, the context must include `DocumentApp: global.DocumentApp`).
+    - The script must read the content of `src/Code.js`.
+    - The script must define a `callingCode` block that:
+        - Enables sandbox mode: `ScriptApp.__behavior.sandBoxMode = true;`
+        - **Explicitly calls the main function** generated in `src/Code.js`.
+        - Cleans up the environment: `ScriptApp.__behavior.trash();`
+    - The script must run both the script code and the calling code within the `vm` context.
+
+Use the `write_file` tool to create both `src/Code.js` and `run.js`.
+"""

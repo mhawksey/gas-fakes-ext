@@ -1,0 +1,5 @@
+description = "Installs the gas-fakes MCP server script into the project."
+prompt = """
+Ask the user to run the following command to install the required dependencies: `!{npm install @modelcontextprotocol/sdk zod}`
+"""
+
