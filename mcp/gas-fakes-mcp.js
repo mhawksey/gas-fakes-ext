@@ -24,48 +24,149 @@ const tool = {
         .describe(
           `Provide a Google Apps Script. The Google Apps Script is the generated script or the script provided by a prompt. When you put the script in a function like \`function sample() { script }\`, it is required to add \`sample();\` to run the function. When you directly put the script, the script can be run. In the current stage, gas-fakes cannot use \`Logger.log\`. So, please use \`console.log\` instead of it. If an error occurs, modify the script by referring to StackOverflow again.`
         ),
-      whitelistItems: z
-        .array(z.string().describe(`File ID of file on Google Drive`))
-        .describe(
-          `Use this to access the existing files on Google Drive. Provide the file IDs of the files on Google Drive as an array. When this is used, the property "sandbox" is required to be true. The default is no items in an array.`
-        )
-        .optional(),
       sandbox: z
         .boolean()
         .describe(
           `The default is true. When this is true, the script is run with the sandbox. When this is false, the script is run without the sandbox.`
-        ),
+        )
+        .optional(),
+      strictSandbox: z
+        .boolean()
+        .describe(
+          `The default is true. When this is true (and sandboxMode is active), attempts to access non-whitelisted, non-session files will throw an error. If false, access is allowed.`
+        )
+        .optional(),
+      cleanup: z
+        .boolean()
+        .describe(
+          `The default is true. If true, ScriptApp.__behavior.trash() moves all session-created files to Google Drive trash. Set to false to leave artifacts for inspection.`
+        )
+        .optional(),
+      whitelistItems: z
+        .array(
+          z.object({
+            id: z.string().describe("File ID of file on Google Drive"),
+            read: z.boolean().optional().describe("Allow read operations"),
+            write: z.boolean().optional().describe("Allow write operations"),
+            trash: z.boolean().optional().describe("Allow trashing the file"),
+          })
+        )
+        .describe(
+          `Use this to access the existing files on Google Drive. Provide an array of objects, where each object has a file ID and optional read/write/trash permissions.`
+        )
+        .optional(),
+      serviceControls: z
+        .record(
+          z.object({
+            enabled: z.boolean().optional(),
+            sandboxMode: z.boolean().optional(),
+            strictSandbox: z.boolean().optional(),
+          })
+        )
+        .describe(
+          `Per-service settings that override global settings. The key is the service name (e.g., 'DriveApp').`
+        )
+        .optional(),
+      methodWhitelist: z
+        .record(z.array(z.string()))
+        .describe(
+          `An object where the key is the service name and the value is an array of permitted method names.`
+        )
+        .optional(),
     },
   },
   func: async (object = {}) => {
-    const { sandbox = true, whitelistItems = [], gas_script } = object;
+    const {
+      sandbox = true,
+      strictSandbox,
+      cleanup,
+      whitelistItems = [],
+      serviceControls = {},
+      methodWhitelist = {},
+      gas_script,
+    } = object;
     const importFile = "./mcp-sample.js";
 
     function getImportScript() {
       const importScriptAr = [
         `import "./node_modules/@mcpher/gas-fakes/main.js"`,
         "",
+        `const behavior = ScriptApp.__behavior;`,
       ];
-      if (whitelistItems.length === 0) {
-        importScriptAr.push(
-          sandbox ? `ScriptApp.__behavior.sandBoxMode = true;` : "",
-          `\n\n${gas_script}\n\n`,
-          sandbox ? `ScriptApp.__behavior.trash();` : ""
-        );
-      } else {
-        const wl = whitelistItems
-          .map((id) => `behavior.newIdWhitelistItem("${id}").setWrite(true)`)
-          .join(",");
-        importScriptAr.push(
-          `const behavior = ScriptApp.__behavior;`,
-          `behavior.sandboxMode = true;`,
-          `behavior.strictSandbox = true;`,
-          `behavior.setIdWhitelist([${wl}]);`,
-          `\n\n${gas_script}\n\n`,
-          `ScriptApp.__behavior.trash();`
-        );
+
+      if (sandbox) {
+        importScriptAr.push(`behavior.sandboxMode = true;`);
+        if (strictSandbox !== undefined) {
+          importScriptAr.push(`behavior.strictSandbox = ${strictSandbox};`);
+        }
+        if (cleanup !== undefined) {
+          importScriptAr.push(`behavior.cleanup = ${cleanup};`);
+        }
       }
-      return importScriptAr.join("\n");
+
+      if (whitelistItems.length > 0) {
+        const wl = whitelistItems
+          .map((item) => {
+            let wlItem = `behavior.newIdWhitelistItem("${item.id}")`;
+            if (item.read !== undefined) {
+              wlItem += `.setRead(${item.read})`;
+            }
+            if (item.write !== undefined) {
+              wlItem += `.setWrite(${item.write})`;
+            }
+            if (item.trash !== undefined) {
+              wlItem += `.setTrash(${item.trash})`;
+            }
+            return wlItem;
+          })
+          .join(",");
+        importScriptAr.push(`behavior.setIdWhitelist([${wl}]);`);
+      }
+
+      for (const service in serviceControls) {
+        const controls = serviceControls[service];
+        importScriptAr.push(
+          `const ${service}Controls = behavior.sandboxService.${service};`
+        );
+        if (controls.enabled !== undefined) {
+          importScriptAr.push(
+            `${service}Controls.enabled = ${controls.enabled};`
+          );
+        }
+        if (controls.sandboxMode !== undefined) {
+          importScriptAr.push(
+            `${service}Controls.sandboxMode = ${controls.sandboxMode};`
+          );
+        }
+        if (controls.strictSandbox !== undefined) {
+          importScriptAr.push(
+            `${service}Controls.strictSandbox = ${controls.strictSandbox};`
+          );
+        }
+      }
+
+      for (const service in methodWhitelist) {
+        const methods = methodWhitelist[service];
+        importScriptAr.push(
+          `const ${service}Whitelist = behavior.sandboxService.${service};`
+        );
+        importScriptAr.push(
+          `${service}Whitelist.clearMethodWhitelist();`
+        );
+        for (const method of methods) {
+          importScriptAr.push(
+            `${service}Whitelist.addMethodWhitelist("${method}");`
+          );
+        }
+      }
+
+      importScriptAr.push(`\\n\\n${gas_script}\\n\\n`);
+
+      if (sandbox) {
+        importScriptAr.push(`behavior.trash();`);
+      }
+
+      return importScriptAr.join("\\n");
     }
 
     try {

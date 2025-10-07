@@ -85,7 +85,7 @@ This extension also includes tools for integrating with Model Context Protocol (
 
 ### Local `gas-fakes` MCP Server
 
-This project includes a script to run the `gas-fakes` library as a local MCP server. This allows Gemini to interact with the sandboxed Google Apps Script environment, discover its capabilities, and execute scripts within it. This provides a powerful way to automate Google Workspace tasks in a secure and conversational manner.
+This project includes a script to run the `gas-fakes` library as a local MCP server. This allows Gemini to interact with the sandboxed Google Apps Script environment, discover its capabilities, and execute scripts within it. The packaged MCP server now exposes advanced sandbox controls, allowing for fine-grained control over the execution environment.
 
 For more information on this approach, see this article: [Secure and Conversational Google Workspace Automation: Integrating Gemini CLI with a gas-fakes MCP Server](https://tanaikech.github.io/2025/09/30/secure-and-conversational-google-workspace-automation-integrating-gemini-cli-with-a-gas-fakes-mcp-server/)
 
@@ -100,6 +100,33 @@ For more information, see the official documentation: [Use Large Language Models
 This extension uses Bruce Mcpherson's `gas-fakes` library, which emulates the Google Apps Script environment locally. The `run.js` script sets up a secure sandbox using Node.js's `vm` module and executes your GAS code within that sandbox. This prevents the script from accessing any external resources or APIs, ensuring a safe execution environment.
 
 The sandbox can be configured to have granular control over which files a script can access, providing a safe way to test scripts that interact with your Google Drive files.
+
+## Advanced Sandbox Configuration
+
+The packaged MCP server exposes a number of advanced controls that allow you to fine-tune the sandbox environment. These controls can be passed as parameters to the `run-gas-fakes-test` tool.
+
+*   **`strictSandbox` (boolean):** When `true` (and `sandboxMode` is active), attempts to access non-whitelisted, non-session files will throw an error. If `false`, access is allowed.
+*   **`cleanup` (boolean):** If `true`, `ScriptApp.__behavior.trash()` moves all session-created files to Google Drive trash. Set to `false` to leave artifacts for inspection.
+*   **`whitelistItems` (array of objects):** Use this to access existing files on Google Drive. Provide an array of objects, where each object has a file ID and optional read/write/trash permissions.
+    ```javascript
+    [
+      { id: "FILE_ID_1", write: true },
+      { id: "FILE_ID_2", read: true, trash: false },
+    ]
+    ```
+*   **`serviceControls` (object):** Per-service settings that override global settings. The key is the service name (e.g., `'DriveApp'`).
+    ```javascript
+    {
+      "DriveApp": { "enabled": false },
+      "SpreadsheetApp": { "sandboxMode": false },
+    }
+    ```
+*   **`methodWhitelist` (object):** An object where the key is the service name and the value is an array of permitted method names.
+    ```javascript
+    {
+      "DriveApp": ["getFiles", "createFile"],
+    }
+    ```
 
 ## Acknowledgement
 
