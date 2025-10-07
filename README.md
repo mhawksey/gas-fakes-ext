@@ -18,6 +18,8 @@ This extension is designed to solve this problem by providing a local developmen
 
 ## Getting Started
 
+To learn more about managing Gemini CLI Extensions, including installation, uninstallation, and updates, please see the [official documentation](https://google-gemini.github.io/gemini-cli/docs/extensions/).
+
 ### Prerequisites
 
 *   [Google Gemini CLI](https://google-gemini.github.io/gemini-cli/docs/getting-started.html)
@@ -27,7 +29,7 @@ This extension is designed to solve this problem by providing a local developmen
 1.  Install the extension:
 
     ```bash
-    gemini extension install <URL_to_this_repo>
+    gemini extension install https://github.com/mhawksey/gas-fakes-ext
     ```
 
 2.  Navigate to your working directory and start Gemini:
