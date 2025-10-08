@@ -29,7 +29,7 @@ To learn more about managing Gemini CLI Extensions, including installation, unin
 1.  Install the extension:
 
     ```bash
-    gemini extension install https://github.com/mhawksey/gas-fakes-ext
+    gemini extensions install https://github.com/mhawksey/gas-fakes-ext
     ```
 
 2.  Navigate to your working directory and start Gemini:
