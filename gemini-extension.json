@@ -3,7 +3,7 @@
   "version": "0.2.1",
   "contextFileName": "GEMINI.md",
   "mcpServers": {
-    "gas-fakes": {
+    "nodeServer": {
       "command": "node",
       "args": [
         "${extensionPath}${/}mcp${/}gas-fakes-mcp.js"
