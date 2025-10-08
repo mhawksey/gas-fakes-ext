@@ -1,6 +1,6 @@
 {
   "name": "gas-fakes-ext",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "contextFileName": "GEMINI.md",
   "mcpServers": {
     "gas-fakes-mcp": {
