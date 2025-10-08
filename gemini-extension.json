@@ -1,13 +1,11 @@
 {
   "name": "gas-fakes-ext",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "contextFileName": "GEMINI.md",
   "mcpServers": {
-    "nodeServer": {
+    "gas-fakes-mcp": {
       "command": "node",
-      "args": [
-        "${extensionPath}${/}mcp${/}gas-fakes-mcp.js"
-      ],
+      "args": ["${extensionPath}${/}mcp${/}gas-fakes-mcp.js"],
       "cwd": "${extensionPath}"
     },
     "workspace-developer": {
