@@ -1,1 +1,12 @@
-mcp/node_modules/
+# Dependencies
+/node_modules
+/mcp/node_modules
+
+# Temporary files
+/temp
+
+# Logs
+*.log
+
+# OS-specific
+.DS_Store
