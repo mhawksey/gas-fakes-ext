@@ -69,10 +69,6 @@ Generates a Google Apps Script file (`src/Code.js`) and a corresponding runner s
 /gas:new "create a new Google Doc and write 'Hello, World!' to it"
 ```
 
-### `/gas:mcp-install`
-
-Installs the `gas-fakes` MCP server script into the project. This is used for more advanced scenarios where you need to interact with the `gas-fakes` server.
-
 ## GEMINI.md and System Instructions
 
 This extension includes a `GEMINI.md` file, which provides system instructions to the Gemini model. This file contains information about how to use the `gas-fakes` library, ensuring that the model can generate code that is compatible with the sandboxed environment.
