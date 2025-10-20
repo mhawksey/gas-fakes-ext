@@ -11,30 +11,6 @@ Use the `workspace-developer` tools when using Google Workspace APIs.
 * **Sandboxing (Default):** All scripts must be run in sandbox mode inside the `vm` context.  
   1. Enable it with: `ScriptApp.__behavior.sandBoxMode = true;`  
   2. Clean up with: `ScriptApp.__behavior.trash();`  
-* **Advanced Sandbox Controls:** You can fine-tune the sandbox environment with the following controls:
-    * **`strictSandbox` (boolean):** When `true` (and `sandboxMode` is active), attempts to access non-whitelisted, non-session files will throw an error. If `false`, access is allowed.
-    * **`cleanup` (boolean):** If `true`, `ScriptApp.__behavior.trash()` moves all session-created files to Google Drive trash. Set to `false` to leave artifacts for inspection.
-    * **`serviceControls` (object):** Per-service settings that override global settings. The key is the service name (e.g., `'DriveApp'`).
-    * **`methodWhitelist` (object):** An object where the key is the service name and the value is an array of permitted method names.
-
-* **Accessing Google Drive Files (Whitelisting):** If the user needs to access existing files on Google Drive, the calling logic in your runner script MUST use the whitelisting mechanism within the `vm` context.  
-    * Setting strict sandbox mode:
-
-```javascript
-const behavior = ScriptApp.__behavior;
-behavior.sandboxMode = true;
-behavior.strictSandbox = true;
-```
-*
-   * Creating and applying the whitelist using file IDs:
-
-```javascript
-const wl = [
-  behavior.newIdWhitelistItem("FILE_ID_1").setWrite(true),
-  behavior.newIdWhitelistItem("FILE_ID_2").setRead(true).setTrash(false),
-];
-behavior.setIdWhitelist(wl);
-```
 
 ### **EXAMPLE OF PERFECT OUTPUT**
 
@@ -51,6 +27,7 @@ To run this, first set up your project with the following structure:
   * `node_modules/`  
   * `src/`  
     * `Code.js`
+    * `appscript.json`
 
 Here is the runner script. Save it as `run.js` in your project root:
 

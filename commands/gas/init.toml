@@ -54,8 +54,17 @@ Use the `write_file` tool to create the following files and directories with the
      console.log('Hello from Google Apps Script!');
    }
    ```
+**6. Create a manifest `src/appsscript.json` file:**
+   - Create a file named `appsscript.json` inside the `src/` with the following values.
+   ```javascript
+    {
+      "dependencies": {},
+      "exceptionLogging": "STACKDRIVER",
+      "runtimeVersion": "V8"
+    }
+   ```
 
-**6. Create a placeholder `run.js` file:**
+**7. Create a placeholder `run.js` file:**
    - Create a file named `run.js` in the project root with the standard runner boilerplate.
    ```javascript
    import fs from 'fs';
