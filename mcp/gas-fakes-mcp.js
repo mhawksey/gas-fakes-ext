@@ -160,13 +160,13 @@ const tool = {
         }
       }
 
-      importScriptAr.push(`\\n\\n${gas_script}\\n\\n`);
+      importScriptAr.push(`\n\n${gas_script}\n\n`);
 
       if (sandbox) {
         importScriptAr.push(`behavior.trash();`);
       }
 
-      return importScriptAr.join("\\n");
+      return importScriptAr.join("\n");
     }
 
     try {
