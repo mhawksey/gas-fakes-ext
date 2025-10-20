@@ -10,7 +10,71 @@ Use the `workspace-developer` tools when using Google Workspace APIs.
 * **Function Execution:** Your runner script must explicitly call the main function from the user's script (e.g., `createAndWriteToDoc();`) to ensure it runs.  
 * **Sandboxing (Default):** All scripts must be run in sandbox mode inside the `vm` context.  
   1. Enable it with: `ScriptApp.__behavior.sandBoxMode = true;`  
-  2. Clean up with: `ScriptApp.__behavior.trash();`  
+  2. Clean up with: `ScriptApp.__behavior.trash();` 
+
+## File Access Control: The Whitelist
+
+When you need to access specific, pre-existing files (like templates or test data fixtures) in strict sandbox mode, you can add their IDs to a whitelist.
+
+### `IdWhitelistItem`
+
+You create whitelist entries using `behavior.newIdWhitelistItem(id)`. Each item can be configured with specific permissions.
+
+| Method | Description |
+|---|---|
+| `setRead(boolean)` | Allows read operations (e.g., `openById`, `getName`). Defaults to `true`. |
+| `setWrite(boolean)` | Allows write operations (e.g., `setContent`, `appendParagraph`). Defaults to `false`. |
+| `setTrash(boolean)` | Allows the file to be trashed (`setTrashed(true)`). Defaults to `false`. |
+
+### Whitelist Management Methods
+
+| Method | Description |
+|---|---|
+| `addIdWhitelist(item)` | Adds an `IdWhitelistItem` to the list. |
+| `removeIdWhitelist(id)` | Removes an item from the list by its ID. |
+| `clearIdWhitelist()` | Clears all items from the whitelist. |
+| `setIdWhitelist(items)` | Replaces the entire whitelist with a new array of `IdWhitelistItem`s. |
+
+### Whitelist Example
+
+```javascript
+const behavior = ScriptApp.__behavior;
+behavior.sandboxMode = true;
+behavior.strictSandbox = true;
+
+const TEMPLATE_DOC_ID = 'your-template-doc-id';
+const LOG_SHEET_ID = 'your-log-sheet-id';
+
+// Whitelist a document for reading only
+const readOnlyItem = behavior.newIdWhitelistItem(TEMPLATE_DOC_ID);
+
+// Whitelist a spreadsheet for reading, writing, and trashing
+const readWriteItem = behavior.newIdWhitelistItem(LOG_SHEET_ID)
+  .setWrite(true)
+  .setTrash(true);
+
+behavior.setIdWhitelist([readOnlyItem, readWriteItem]);
+
+// --- Accessing whitelisted files ---
+
+// This succeeds (read is allowed)
+const doc = DocumentApp.openById(TEMPLATE_DOC_ID);
+console.log(doc.getName());
+
+// This fails (write is not allowed for the doc)
+try {
+  doc.getBody().appendParagraph('This will fail.');
+} catch (e) {
+  console.error(e.message); // Write access to file ... is denied
+}
+
+// This succeeds (write is allowed for the sheet)
+const sheet = SpreadsheetApp.openById(LOG_SHEET_ID);
+sheet.getRange('A1').setValue('Log entry');
+
+// This succeeds (trash is allowed for the sheet)
+DriveApp.getFileById(LOG_SHEET_ID).setTrashed(true);
+``` 
 
 ### **EXAMPLE OF PERFECT OUTPUT**
 
