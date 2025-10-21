@@ -22,7 +22,7 @@ Use the `write_file` tool to create the following files and directories with the
        "start": "node run.js"
      },
      "devDependencies": {
-       "@mcpher/gas-fakes": "^1.0.1"
+       "@mcpher/gas-fakes": "^1.2.4"
      }
    }
    ```
